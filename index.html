@@ -11,5 +11,10 @@
 </head>
 <body>
 <h1>リント地方 開発中</h1>
+  <script>
+if ("serviceWorker" in navigator) {
+  navigator.serviceWorker.register("./service-worker.js");
+}
+  </script>
 </body>
 </html>
