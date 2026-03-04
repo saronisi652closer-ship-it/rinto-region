@@ -106,33 +106,6 @@ function drawBattle() {
 
   // にげるボタン（右下）
   drawButton("にげる", 156, 120, 78, 16);
-}function drawBattle(){
-  ctx.clearRect(0,0,W,H);
-
-  // 背景
-  ctx.fillStyle = "#1a1a2a";
-  ctx.fillRect(0,0,W,H);
-
-  // 敵（仮）
-  ctx.fillStyle = "#f5d000";
-  ctx.fillRect(160, 30, 48, 48);
-
-  // 自分（仮）
- const px = state.player.x * TILE;
-const py = state.player.y * TILE;
-
-if (playerImgReady) {
-  ctx.drawImage(playerImg, px, py, TILE, TILE);
-} else {
-  // 画像がまだ読めない時の保険（赤四角）
-  ctx.fillStyle = "#ff3b30";
-  ctx.fillRect(px, py, TILE, TILE);
-}
-  // メッセージ
-  drawBox(state.msg || "どうする？", 6, 112, W-12, 42);
-
-  // コマンド（簡易）
-  drawButton("にげる", 156, 120, 78, 16);
 }
 
 function drawBox(text, x,y,w,h){
