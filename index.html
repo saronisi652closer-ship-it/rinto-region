@@ -1,33 +1,64 @@
-<!DOCTYPE html>
-<html lang="ja">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
-  <title>リント地方</title>
+const canvas = document.getElementById("game");
+const ctx = canvas.getContext("2d");
+ctx.imageSmoothingEnabled = false;
 
-  <link rel="stylesheet" href="./style.css" />
-  <link rel="manifest" href="./manifest.webmanifest" />
-  <meta name="theme-color" content="#000000" />
+const W = 240, H = 160;
+const TILE = 16;
 
-  <!-- iOS PWA -->
-  <meta name="apple-mobile-web-app-capable" content="yes" />
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-</head>
-<body>
-  <div class="wrap">
-    <canvas id="game" width="240" height="160"></canvas>
+// #=壁  .=道  G=草むら
+const MAP = [
+  "################",
+  "#......GGG.....#",
+  "#..####...###..#",
+  "#..#..#...#.#..#",
+  "#..#..#...#.#..#",
+  "#..####...###..#",
+  "#..............#",
+  "################"
+];
 
-    <!-- タッチ用（スマホ向け） -->
-    <div class="pad" aria-label="touch dpad">
-      <button data-dir="up">▲</button>
-      <div class="mid">
-        <button data-dir="left">◀</button>
-        <button data-dir="down">▼</button>
-        <button data-dir="right">▶</button>
-      </div>
-    </div>
-  </div>
+const state = {
+  mode: "field", // "field" | "battle"
+  msg: "フィールド  矢印/タッチで移動",
+  player: { x: 2, y: 5 },
+  enemyName: "",
+};
 
-  <script src="./game.js"></script>
-</body>
-</html>
+function tileAt(x, y) {
+  if (y < 0 || y >= MAP.length) return "#";
+  if (x < 0 || x >= MAP[y].length) return "#";
+  return MAP[y][x];
+}
+
+function tryMove(dx, dy) {
+  if (state.mode !== "field") return;
+
+  const nx = state.player.x + dx;
+  const ny = state.player.y + dy;
+
+  if (tileAt(nx, ny) === "#") return;
+
+  state.player.x = nx;
+  state.player.y = ny;
+
+  // 草むらなら20%でエンカウント
+  if (tileAt(nx, ny) === "G" && Math.random() < 0.20) {
+    startBattle();
+  } else {
+    state.msg = "フィールド  矢印/タッチで移動";
+  }
+
+  draw();
+}
+
+function startBattle() {
+  state.mode = "battle";
+  const enemies = ["ムシっぽいの", "トリっぽいの", "ノーマルっぽいの"];
+  state.enemyName = enemies[Math.floor(Math.random() * enemies.length)];
+  state.msg = `野生の${state.enemyName}が あらわれた！`;
+}
+
+function endBattle() {
+  state.mode = "field";
+  state.enemyName = "";
+  state.msg = "
