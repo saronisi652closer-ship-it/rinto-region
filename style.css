@@ -18,11 +18,13 @@ body{
 
 /* 画面 */
 canvas{
-  width:720px;
-  height:480px;
-  image-rendering:pixelated;
-  background:black;
+  width: min(92vw, 720px);
+  aspect-ratio: 240 / 160;
+  height: auto;
+  image-rendering: pixelated;
+  background:#000;
   border-radius:10px;
+  display:block;
 }
 
 /* 左コントローラー */
