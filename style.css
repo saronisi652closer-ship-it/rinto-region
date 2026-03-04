@@ -169,3 +169,40 @@ button:active{ background:#222; }
     align-content:center;
   }
 }
+/* 横画面用レイアウト */
+@media (orientation: landscape){
+
+  .shell{
+    grid-template-columns: auto 1fr auto;
+    align-items:center;
+    height:100vh;
+  }
+
+  .mid{
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap:10px;
+  }
+
+  canvas{
+    width:70vw;
+    max-width:720px;
+  }
+
+  .left{
+    display:flex;
+    justify-content:center;
+  }
+
+  .right{
+    display:flex;
+    justify-content:center;
+  }
+
+  .ab{
+    width:200px;
+    height:200px;
+  }
+
+}
