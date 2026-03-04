@@ -41,7 +41,7 @@ body{
 
 /* 画面：スマホでも絶対はみ出さない */
 canvas{
-  width:min(65vw, 720px);
+  width:min(60vw, 640px);
   aspect-ratio:240/160;
   height:auto;
   image-rendering:pixelated;
