@@ -121,3 +121,45 @@ button:active{ background:#222; }
   .mid{ order:1; }
   .right{ order:3; }
 }
+/* 十字キーを必ず表示＆前面に */
+.left { z-index: 10; }
+
+.dpad{
+  width:160px;
+  height:160px;
+  background:#111;
+  border:1px solid #333;
+  border-radius:20px;
+  position:relative;
+}
+
+/* いま class="dpad-btn ..." を使ってるのでこっちを効かせる */
+.dpad-btn{
+  position:absolute;
+  width:58px;
+  height:58px;
+  border-radius:14px;
+  background:#eee;
+  color:#000;
+  font-size:18px;
+  font-weight:700;
+  border:1px solid #555;
+}
+
+/* 位置（class名に合わせる） */
+.dpad-btn.up{ top:10px; left:51px; }
+.dpad-btn.down{ bottom:10px; left:51px; }
+.dpad-btn.leftb{ left:10px; top:51px; }
+.dpad-btn.rightb{ right:10px; top:51px; }
+
+.dpad-center{
+  position:absolute;
+  left:50%;
+  top:50%;
+  transform:translate(-50%,-50%);
+  width:54px;
+  height:54px;
+  border-radius:12px;
+  background:#222;
+  border:1px solid #444;
+}
