@@ -72,7 +72,10 @@ function drawField(){
       ctx.fillRect(x*TILE, y*TILE, TILE, TILE);
     }
   }
-
+const playerImg = new Image();
+playerImg.src = "./player.png";
+let playerImgReady = false;
+playerImg.onload = () => { playerImgReady = true; draw(); };
   // プレイヤー
   ctx.fillStyle = "#ff3b30";
   ctx.fillRect(state.player.x*TILE, state.player.y*TILE, TILE, TILE);
@@ -93,9 +96,16 @@ function drawBattle(){
   ctx.fillRect(160, 30, 48, 48);
 
   // 自分（仮）
-  ctx.fillStyle = "#ff3b30";
-  ctx.fillRect(32, 78, 48, 48);
+ const px = state.player.x * TILE;
+const py = state.player.y * TILE;
 
+if (playerImgReady) {
+  ctx.drawImage(playerImg, px, py, TILE, TILE);
+} else {
+  // 画像がまだ読めない時の保険（赤四角）
+  ctx.fillStyle = "#ff3b30";
+  ctx.fillRect(px, py, TILE, TILE);
+}
   // メッセージ
   drawBox(state.msg || "どうする？", 6, 112, W-12, 42);
 
