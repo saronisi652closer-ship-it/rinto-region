@@ -207,17 +207,5 @@ document.querySelectorAll(".ss-btn").forEach((btn) => {
     if (k === "select") { state.msg = "（SELECT）未実装"; draw(); }
   });
 });
-// A/B ボタン（仮）
-document.querySelectorAll(".ab-btn").forEach((btn) => {
-  btn.addEventListener("click", () => {
-    const key = btn.dataset.btn; // "a" or "b"
-    if (state.mode === "battle") {
-      if (key === "b") { endBattle(); draw(); } // Bでにげる
-      if (key === "a") { state.msg = "（A）まだ未実装"; draw(); }
-    } else {
-      if (key === "a") { state.msg = "（A）調べる/話す（未実装）"; draw(); }
-      if (key === "b") { state.msg = "（B）キャンセル（未実装）"; draw(); }
-    }
-  });
-});
+
 draw();
