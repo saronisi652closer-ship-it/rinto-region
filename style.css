@@ -1,208 +1,141 @@
+:root{
+  --bg:#000;
+  --panel:#111;
+  --edge:#333;
+  --btn:#111;
+  --btnAct:#222;
+  --txt:#fff;
+}
+
+*{ box-sizing:border-box; }
 body{
   margin:0;
-  background:#000;
-  color:white;
+  background:var(--bg);
+  color:var(--txt);
+  min-height:100vh;
   display:flex;
   justify-content:center;
   align-items:center;
-  height:100vh;
   font-family:sans-serif;
 }
 
+/* 3列：左十字 / 中央画面 / 右AB */
 .shell{
-  width: 100vw;
-  max-width: 980px;
+  width:100vw;
+  max-width:980px;
   display:grid;
-  grid-template-columns: auto 1fr auto;
+  grid-template-columns:auto 1fr auto;
+  gap:14px;
+  padding:14px;
   align-items:center;
   justify-items:center;
-  gap: 14px;
-  padding: 14px;
-  overflow: hidden;
 }
 
-/* 画面 */
+/* 中央は縦並び（画面→SS） */
+.mid{
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:10px;
+}
+
+/* 画面：スマホでも絶対はみ出さない */
 canvas{
-  width: min(92vw, 720px);
-  aspect-ratio: 240 / 160;
-  height: auto;
-  image-rendering: pixelated;
+  width:min(70vw, 720px);
+  aspect-ratio:240/160;
+  height:auto;
+  image-rendering:pixelated;
   background:#000;
   border-radius:10px;
   display:block;
+  border:1px solid var(--edge);
 }
 
-/* 左コントローラー */
+/* 共通ボタン */
+button{
+  border:1px solid #444;
+  background:var(--btn);
+  color:var(--txt);
+  -webkit-tap-highlight-color: transparent;
+}
+button:active{ background:var(--btnAct); }
+
+/* 十字キー */
+.left{ z-index:10; }
 .dpad{
   position:relative;
-  width:150px;
-  height:150px;
+  width:170px;
+  height:170px;
+  background:var(--panel);
+  border:1px solid var(--edge);
+  border-radius:22px;
 }
-
-.dpad button{
-  position:absolute;
-  width:50px;
-  height:50px;
-  font-size:18px;
-}
-
-.up{top:0;left:50px;}
-.down{bottom:0;left:50px;}
-.leftb{left:0;top:50px;}
-.rightb{right:0;top:50px;}
-
-/* A B ボタン */
-.ab{
-  position:relative;
-  width:150px;
-  height:150px;
-}
-
-.ab button{
+.dpad-btn{
   position:absolute;
   width:60px;
   height:60px;
-  border-radius:50%;
-  font-size:18px;
-}
-
-.a{
-  right:0;
-  top:20px;
-}
-
-.b{
-  left:0;
-  bottom:20px;
-}
-
-/* START SELECT */
-.ss{
-  display:flex;
-  justify-content:center;
-  gap:10px;
-  margin-top:10px;
-}
-/* 左・中央・右の箱（HTMLにある前提） */
-.left, .mid, .right{
-  display:flex;
-  justify-content:center;
-  align-items:center;
-}
-
-/* 中央は縦並び（Canvasの下にSTART/SELECT） */
-.mid{
-  flex-direction:column;
-  gap:10px;
-}
-
-/* ボタン見た目を統一 */
-button{
-  border:1px solid #444;
-  background:#111;
-  color:#fff;
-}
-button:active{ background:#222; }
-
-/* START/SELECT ボタンの見た目 */
-.ss button{
-  padding:10px 14px;
-  border-radius:10px;
-  font-weight:700;
-}
-
-/* 小さい画面（縦）では3列を1列にして見やすく */
-@media (max-width: 520px){
-  .shell{
-    grid-template-columns: 1fr;
-    gap:12px;
-  }
-  .left{ order:2; }
-  .mid{ order:1; }
-  .right{ order:3; }
-}
-/* 十字キーを必ず表示＆前面に */
-.left { z-index: 10; }
-
-.dpad{
-  width:160px;
-  height:160px;
-  background:#111;
-  border:1px solid #333;
-  border-radius:20px;
-  position:relative;
-}
-
-/* いま class="dpad-btn ..." を使ってるのでこっちを効かせる */
-.dpad-btn{
-  position:absolute;
-  width:58px;
-  height:58px;
   border-radius:14px;
   background:#eee;
   color:#000;
   font-size:18px;
-  font-weight:700;
-  border:1px solid #555;
+  font-weight:800;
+  border:1px solid #666;
 }
-
-/* 位置（class名に合わせる） */
-.dpad-btn.up{ top:10px; left:51px; }
-.dpad-btn.down{ bottom:10px; left:51px; }
-.dpad-btn.leftb{ left:10px; top:51px; }
-.dpad-btn.rightb{ right:10px; top:51px; }
-
+.dpad-btn.up{ top:10px; left:55px; }
+.dpad-btn.down{ bottom:10px; left:55px; }
+.dpad-btn.leftb{ left:10px; top:55px; }
+.dpad-btn.rightb{ right:10px; top:55px; }
 .dpad-center{
   position:absolute;
   left:50%;
   top:50%;
   transform:translate(-50%,-50%);
-  width:54px;
-  height:54px;
-  border-radius:12px;
+  width:56px;
+  height:56px;
+  border-radius:14px;
   background:#222;
   border:1px solid #444;
 }
-@media (orientation: landscape){
-  .shell{
-    height:100vh;
-    align-content:center;
-  }
+
+/* AB */
+.ab{
+  position:relative;
+  width:200px;
+  height:200px;
+  background:var(--panel);
+  border:1px solid var(--edge);
+  border-radius:22px;
 }
-/* 横画面用レイアウト */
-@media (orientation: landscape){
+.ab-btn{
+  position:absolute;
+  width:78px;
+  height:78px;
+  border-radius:50%;
+  font-size:20px;
+  font-weight:900;
+  background:#1a1a1a;
+  border:1px solid #444;
+}
+.ab-btn.a{ right:18px; top:44px; }
+.ab-btn.b{ left:18px; top:92px; }
 
-  .shell{
-    grid-template-columns: auto 1fr auto;
-    align-items:center;
-    height:100vh;
-  }
+/* START/SELECT */
+.ss{
+  display:flex;
+  gap:10px;
+  justify-content:center;
+}
+.ss-btn{
+  padding:10px 14px;
+  border-radius:12px;
+  font-weight:900;
+}
 
-  .mid{
-    display:flex;
-    flex-direction:column;
-    align-items:center;
-    gap:10px;
-  }
-
-  canvas{
-    width:70vw;
-    max-width:720px;
-  }
-
-  .left{
-    display:flex;
-    justify-content:center;
-  }
-
-  .right{
-    display:flex;
-    justify-content:center;
-  }
-
-  .ab{
-    width:200px;
-    height:200px;
-  }
-
+/* 縦画面は1列にして崩れない */
+@media (max-width: 520px){
+  .shell{ grid-template-columns:1fr; }
+  canvas{ width:min(92vw, 720px); }
+  .left{ order:2; }
+  .mid{ order:1; }
+  .right{ order:3; }
 }
