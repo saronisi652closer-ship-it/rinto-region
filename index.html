@@ -61,4 +61,132 @@ function startBattle() {
 function endBattle() {
   state.mode = "field";
   state.enemyName = "";
-  state.msg = "
+  state.msg = "フィールド  矢印/タッチで移動";
+}
+
+function drawBox(text, x, y, w, h) {
+  ctx.fillStyle = "rgba(0,0,0,0.75)";
+  ctx.fillRect(x, y, w, h);
+  ctx.strokeStyle = "#ffffff";
+  ctx.strokeRect(x, y, w, h);
+
+  ctx.fillStyle = "#fff";
+  ctx.font = "10px sans-serif";
+  wrapText(text, x + 6, y + 14, w - 12, 12);
+}
+
+function wrapText(text, x, y, maxWidth, lineHeight) {
+  const chars = text.split("");
+  let line = "";
+  for (let i = 0; i < chars.length; i++) {
+    const test = line + chars[i];
+    if (ctx.measureText(test).width > maxWidth && i > 0) {
+      ctx.fillText(line, x, y);
+      line = chars[i];
+      y += lineHeight;
+    } else {
+      line = test;
+    }
+  }
+  ctx.fillText(line, x, y);
+}
+
+function drawButton(label, x, y, w, h) {
+  ctx.fillStyle = "#222";
+  ctx.fillRect(x, y, w, h);
+  ctx.strokeStyle = "#fff";
+  ctx.strokeRect(x, y, w, h);
+  ctx.fillStyle = "#fff";
+  ctx.font = "10px sans-serif";
+  ctx.fillText(label, x + 8, y + 12);
+}
+
+function drawField() {
+  ctx.clearRect(0, 0, W, H);
+
+  for (let y = 0; y < MAP.length; y++) {
+    for (let x = 0; x < MAP[y].length; x++) {
+      const t = MAP[y][x];
+      if (t === "#") ctx.fillStyle = "#0f2a1a";
+      else if (t === "G") ctx.fillStyle = "#1f7a2f";
+      else ctx.fillStyle = "#66aa66";
+      ctx.fillRect(x * TILE, y * TILE, TILE, TILE);
+    }
+  }
+
+  // プレイヤー
+  ctx.fillStyle = "#ff3b30";
+  ctx.fillRect(state.player.x * TILE, state.player.y * TILE, TILE, TILE);
+
+  // 上部ガイド
+  drawBox(state.msg, 4, 4, W - 8, 22);
+}
+
+function drawBattle() {
+  ctx.clearRect(0, 0, W, H);
+
+  // 背景（仮）
+  ctx.fillStyle = "#0b0c10";
+  ctx.fillRect(0, 0, W, H);
+
+  // 敵（仮 48x48）
+  ctx.fillStyle = "#f5d000";
+  ctx.fillRect(160, 24, 48, 48);
+
+  // 自分（仮 48x48）
+  ctx.fillStyle = "#ff3b30";
+  ctx.fillRect(32, 80, 48, 48);
+
+  // メッセージ＆コマンド
+  drawBox(state.msg || "どうする？", 6, 112, W - 12, 42);
+  drawButton("にげる", 156, 120, 78, 16);
+}
+
+function draw() {
+  if (state.mode === "field") drawField();
+  else drawBattle();
+}
+
+// キーボード
+document.addEventListener("keydown", (e) => {
+  if (state.mode === "field") {
+    if (e.key === "ArrowUp") tryMove(0, -1);
+    if (e.key === "ArrowDown") tryMove(0, 1);
+    if (e.key === "ArrowLeft") tryMove(-1, 0);
+    if (e.key === "ArrowRight") tryMove(1, 0);
+  } else {
+    // バトル中：Enter/Escで逃げる
+    if (e.key === "Enter" || e.key === "Escape") {
+      endBattle();
+      draw();
+    }
+  }
+});
+
+// タッチD-Pad（index.htmlにある想定）
+document.querySelectorAll(".pad button").forEach((btn) => {
+  btn.addEventListener("click", () => {
+    const d = btn.dataset.dir;
+    if (d === "up") tryMove(0, -1);
+    if (d === "down") tryMove(0, 1);
+    if (d === "left") tryMove(-1, 0);
+    if (d === "right") tryMove(1, 0);
+  });
+});
+
+// バトル画面クリックで「にげる」
+canvas.addEventListener("click", (ev) => {
+  if (state.mode !== "battle") return;
+
+  const rect = canvas.getBoundingClientRect();
+  const sx = (ev.clientX - rect.left) * (canvas.width / rect.width);
+  const sy = (ev.clientY - rect.top) * (canvas.height / rect.height);
+
+  // にげるボタン領域（156,120,78,16）
+  if (sx >= 156 && sx <= 234 && sy >= 120 && sy <= 136) {
+    endBattle();
+    draw();
+  }
+});
+
+draw();
