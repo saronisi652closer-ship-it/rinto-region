@@ -34,5 +34,43 @@
     navigator.serviceWorker.register("./service-worker.js");
   }
 </script>  
+<body>
+  <div class="shell">
+    <!-- 左：十字キー -->
+    <div class="left">
+      <div class="dpad" aria-label="dpad">
+        <button class="dpad-btn up" data-dir="up">▲</button>
+        <button class="dpad-btn leftb" data-dir="left">◀</button>
+        <button class="dpad-btn rightb" data-dir="right">▶</button>
+        <button class="dpad-btn down" data-dir="down">▼</button>
+        <div class="dpad-center"></div>
+      </div>
+    </div>
+
+    <!-- 中央：画面＋Start/Select -->
+    <div class="mid">
+      <canvas id="game" width="240" height="160"></canvas>
+
+      <div class="ss" aria-label="start select">
+        <button class="ss-btn" data-ss="select">SELECT</button>
+        <button class="ss-btn" data-ss="start">START</button>
+      </div>
+    </div>
+
+    <!-- 右：A/B -->
+    <div class="right">
+      <div class="ab" aria-label="a b">
+        <button class="ab-btn b" data-btn="b">B</button>
+        <button class="ab-btn a" data-btn="a">A</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="./game.js"></script>
+  <script>
+    if ("serviceWorker" in navigator) {
+      navigator.serviceWorker.register("./service-worker.js");
+    }
+  </script>
 </body>
 </html>
