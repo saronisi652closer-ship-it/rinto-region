@@ -1,5 +1,5 @@
 // service-worker.js
-const CACHE_NAME = "rinto-cache-v3"; // ← 数字を上げる（v4, v5…）
+const CACHE_NAME = "rinto-cache-v4"; // ← 数字を上げる（v4, v5…）
 const ASSETS = [
   "./",
   "./index.html",
