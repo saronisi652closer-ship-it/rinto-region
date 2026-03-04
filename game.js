@@ -4,6 +4,11 @@ ctx.imageSmoothingEnabled = false;
 
 const W = 240, H = 160;
 const TILE = 16;
+// プレイヤー画像（1回だけロード）
+const playerImg = new Image();
+playerImg.src = "./player.png";
+let playerImgReady = false;
+playerImg.onload = () => { playerImgReady = true; draw(); };
 
 // マップ：#=壁、.=道、G=草むら
 const MAP = [
