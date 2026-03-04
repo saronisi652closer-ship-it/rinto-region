@@ -77,10 +77,7 @@ function drawField(){
       ctx.fillRect(x*TILE, y*TILE, TILE, TILE);
     }
   }
-const playerImg = new Image();
-playerImg.src = "./player.png";
-let playerImgReady = false;
-playerImg.onload = () => { playerImgReady = true; draw(); };
+
   // プレイヤー
   ctx.fillStyle = "#ff3b30";
   ctx.fillRect(state.player.x*TILE, state.player.y*TILE, TILE, TILE);
