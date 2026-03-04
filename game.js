@@ -168,14 +168,14 @@ document.addEventListener("keydown", (e) => {
   }
 });
 
-// タッチD-Pad
-document.querySelectorAll(".pad button").forEach(btn=>{
-  btn.addEventListener("click", ()=>{
+// タッチ操作（十字キー）
+document.querySelectorAll(".dpad-btn").forEach((btn) => {
+  btn.addEventListener("click", () => {
     const d = btn.dataset.dir;
-    if (d==="up") tryMove(0,-1);
-    if (d==="down") tryMove(0, 1);
-    if (d==="left") tryMove(-1,0);
-    if (d==="right") tryMove(1,0);
+    if (d === "up") tryMove(0, -1);
+    if (d === "down") tryMove(0, 1);
+    if (d === "left") tryMove(-1, 0);
+    if (d === "right") tryMove(1, 0);
   });
 });
 
