@@ -41,14 +41,13 @@ body{
 
 /* 画面：スマホでも絶対はみ出さない */
 canvas{
-  width:min(70vw, 720px);
+  width:min(65vw, 720px);
   aspect-ratio:240/160;
   height:auto;
   image-rendering:pixelated;
   background:#000;
   border-radius:10px;
-  display:block;
-  border:1px solid var(--edge);
+  border:1px solid #333;
 }
 
 /* 共通ボタン */
