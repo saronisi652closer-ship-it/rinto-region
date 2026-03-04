@@ -84,7 +84,27 @@ playerImg.onload = () => { playerImgReady = true; draw(); };
   drawBox("フィールド  矢印/タッチで移動", 4, 4, W-8, 22);
 }
 
-function drawBattle(){
+function drawBattle() {
+  ctx.clearRect(0, 0, W, H);
+
+  // 背景
+  ctx.fillStyle = "#0b0c10";
+  ctx.fillRect(0, 0, W, H);
+
+  // 敵（仮 48x48）
+  ctx.fillStyle = "#f5d000";
+  ctx.fillRect(160, 24, 48, 48);
+
+  // 自分（仮 48x48）
+  ctx.fillStyle = "#ff3b30";
+  ctx.fillRect(32, 80, 48, 48);
+
+  // メッセージ枠
+  drawBox(state.msg || "どうする？", 6, 112, W - 12, 42);
+
+  // にげるボタン（右下）
+  drawButton("にげる", 156, 120, 78, 16);
+}function drawBattle(){
   ctx.clearRect(0,0,W,H);
 
   // 背景
