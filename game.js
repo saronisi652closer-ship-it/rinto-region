@@ -191,5 +191,25 @@ canvas.addEventListener("click", (ev)=>{
     draw();
   }
 });
+// A/B/Start/Select ボタン
+document.querySelectorAll(".ab-btn").forEach((btn) => {
+  btn.addEventListener("click", () => {
+    const key = btn.dataset.btn; // "a" or "b"
+    if (state.mode === "battle") {
+      if (key === "b") { endBattle(); draw(); } // Bでにげる（仮）
+      if (key === "a") { state.msg = "（A）まだ未実装"; draw(); }
+    } else {
+      if (key === "a") { state.msg = "（A）メニュー未実装"; draw(); }
+      if (key === "b") { state.msg = "（B）キャンセル未実装"; draw(); }
+    }
+  });
+});
 
+document.querySelectorAll(".ss-btn").forEach((btn) => {
+  btn.addEventListener("click", () => {
+    const k = btn.dataset.ss; // "start" or "select"
+    if (k === "start") { state.msg = "（START）メニュー未実装"; draw(); }
+    if (k === "select") { state.msg = "（SELECT）未実装"; draw(); }
+  });
+});
 draw();
