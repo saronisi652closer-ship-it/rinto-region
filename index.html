@@ -73,58 +73,43 @@ input{
 
 <!-- タイトル画面 -->
 <div id="title" class="screen fade">
-
-  <!-- ★ロゴ（ここに差し替えOK） -->
-  <img src="logo.png" class="logo">
-
+  <img src="logo.png" class="logo" alt="ミトモン ロゴ">
   <h1>ミトモン</h1>
-
   <button class="btn" onclick="startGame()">はじめる</button>
-
 </div>
 
 <!-- 名前入力 -->
 <div id="nameScreen" class="screen hidden">
-
   <h2>なまえを入力</h2>
-
-  <input id="playerName" placeholder="なまえ">
-
+  <input id="playerName" placeholder="なまえ" maxlength="12">
   <button class="btn" onclick="confirmName()">決定</button>
-
-</div>
-
-<!-- ゲーム開始（仮） -->
-<div id="gameScreen" class="screen hidden">
-
-  <h2 id="welcome"></h2>
-
-  <p>冒険がはじまる…</p>
-
 </div>
 
 <script>
-
 function startGame(){
   document.getElementById("title").classList.add("hidden");
   document.getElementById("nameScreen").classList.remove("hidden");
+  document.getElementById("playerName").focus();
 }
 
 function confirmName(){
-  let name = document.getElementById("playerName").value;
+  const name = document.getElementById("playerName").value.trim();
 
   if(name === ""){
     alert("名前を入力して！");
     return;
   }
 
-  document.getElementById("nameScreen").classList.add("hidden");
-  document.getElementById("gameScreen").classList.remove("hidden");
+  localStorage.setItem("playerName", name);
 
-  document.getElementById("welcome").innerText =
-    name + " の冒険がはじまる！";
+  location.href = "play.html";
 }
 
+document.getElementById("playerName").addEventListener("keydown", function(e){
+  if(e.key === "Enter"){
+    confirmName();
+  }
+});
 </script>
 
 </body>
