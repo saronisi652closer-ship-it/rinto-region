@@ -1,5 +1,5 @@
 // service-worker.js
-const CACHE_NAME = "mitomon-cache-v1";
+const CACHE_NAME = "mitomon-cache-v2";
 
 const ASSETS = [
   "./",
