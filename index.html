@@ -57,7 +57,7 @@ input{
   display:none;
 }
 
-/* 軽いアニメ */
+/* アニメ */
 .fade{
   animation:fade 0.5s;
 }
@@ -71,21 +71,31 @@ input{
 
 <body>
 
-<!-- タイトル画面 -->
+<!-- タイトル -->
 <div id="title" class="screen fade">
-  <img src="logo.png" class="logo" alt="ミトモン ロゴ">
+
+  <!-- ロゴ -->
+  <img src="logo.png" class="logo" alt="ミトモン">
+
   <h1>ミトモン</h1>
+
   <button class="btn" onclick="startGame()">はじめる</button>
+
 </div>
 
 <!-- 名前入力 -->
 <div id="nameScreen" class="screen hidden">
+
   <h2>なまえを入力</h2>
+
   <input id="playerName" placeholder="なまえ" maxlength="12">
+
   <button class="btn" onclick="confirmName()">決定</button>
+
 </div>
 
 <script>
+
 function startGame(){
   document.getElementById("title").classList.add("hidden");
   document.getElementById("nameScreen").classList.remove("hidden");
@@ -100,16 +110,20 @@ function confirmName(){
     return;
   }
 
+  // 名前保存
   localStorage.setItem("playerName", name);
 
+  // 本編へ
   location.href = "play.html";
 }
 
+// Enterキー対応
 document.getElementById("playerName").addEventListener("keydown", function(e){
   if(e.key === "Enter"){
     confirmName();
   }
 });
+
 </script>
 
 </body>
