@@ -3,62 +3,77 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
-  <title>リント地方</title>
+  <title>ミトモン</title>
 
   <link rel="stylesheet" href="./style.css" />
   <link rel="manifest" href="./manifest.webmanifest" />
   <meta name="theme-color" content="#000000" />
 
-  <!-- iOS PWA -->
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
 </head>
 
 <body>
+
+  <!-- プレイヤー名表示 -->
   <div id="playerHud" style="
-  position:fixed;
-  top:10px;
-  left:10px;
-  z-index:999;
-  padding:6px 10px;
-  background:rgba(0,0,0,0.45);
-  color:#fff;
-  border-radius:10px;
-  font-size:14px;
-">
-  主人公：---
+    position:fixed;
+    top:10px;
+    left:10px;
+    z-index:999;
+    padding:6px 10px;
+    background:rgba(0,0,0,0.45);
+    color:#fff;
+    border-radius:10px;
+    font-size:14px;
+  ">
+    主人公：---
   </div>
+
   <div class="shell">
-    <!-- 左：十字キー -->
+    <!-- 左 -->
     <div class="left">
-      <div class="dpad" aria-label="dpad">
+      <div class="dpad">
         <button class="dpad-btn up" data-dir="up">▲</button>
         <button class="dpad-btn leftb" data-dir="left">◀</button>
         <button class="dpad-btn rightb" data-dir="right">▶</button>
         <button class="dpad-btn down" data-dir="down">▼</button>
-        <div class="dpad-center"></div>
       </div>
     </div>
 
-    <!-- 中央：画面＋Start/Select -->
+    <!-- 中央 -->
     <div class="mid">
       <canvas id="game" width="240" height="160"></canvas>
 
-      <div class="ss" aria-label="start select">
+      <div class="ss">
         <button class="ss-btn" data-ss="select">SELECT</button>
         <button class="ss-btn" data-ss="start">START</button>
       </div>
     </div>
 
-    <!-- 右：A/B -->
+    <!-- 右 -->
     <div class="right">
-      <div class="ab" aria-label="a b">
+      <div class="ab">
         <button class="ab-btn b" data-btn="b">B</button>
         <button class="ab-btn a" data-btn="a">A</button>
       </div>
     </div>
   </div>
 
- 
+  <script src="./game.js"></script>
+
+  <script>
+    // 名前取得
+    const playerName = localStorage.getItem("playerName");
+
+    if(playerName){
+      document.getElementById("playerHud").textContent = "主人公：" + playerName;
+    }
+
+    if ("serviceWorker" in navigator) {
+      navigator.serviceWorker.register("./service-worker.js");
+    }
+  </script>
+
 </body>
 </html>
