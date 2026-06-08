@@ -2,129 +2,219 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>ミトモン</title>
 
 <style>
-body{
+*{
+  box-sizing:border-box;
+}
+
+html,body{
   margin:0;
-  font-family: sans-serif;
-  background: linear-gradient(180deg,#0a1a2f,#123c5c);
-  color:white;
+  width:100%;
+  height:100%;
+  font-family:sans-serif;
   overflow:hidden;
 }
 
-/* 共通 */
+body{
+  color:white;
+  background:
+    radial-gradient(circle at 20% 20%, rgba(95,240,204,.25), transparent 25%),
+    radial-gradient(circle at 80% 15%, rgba(255,216,77,.18), transparent 25%),
+    linear-gradient(160deg,#06142f,#0d2f6f 45%,#0a5d87 75%,#149b96);
+}
+
+/* 画面 */
 .screen{
   position:absolute;
-  width:100%;
-  height:100%;
+  inset:0;
   display:flex;
-  flex-direction:column;
   justify-content:center;
   align-items:center;
+  padding:20px;
+}
+
+/* 背景グリッド */
+.grid{
+  position:absolute;
+  inset:0;
+  background-image:
+    linear-gradient(rgba(255,255,255,.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,.05) 1px, transparent 1px);
+  background-size:34px 34px;
+  animation:gridMove 18s linear infinite;
+  opacity:.35;
+}
+
+/* 光の輪 */
+.ring{
+  position:absolute;
+  width:72vmin;
+  height:72vmin;
+  border-radius:50%;
+  border:1px solid rgba(255,255,255,.18);
+  box-shadow:0 0 40px rgba(95,240,204,.18);
+}
+
+/* カード */
+.card{
+  position:relative;
+  z-index:2;
+  width:min(92vw,560px);
+  padding:28px 22px;
+  border-radius:30px;
+  text-align:center;
+  background:linear-gradient(180deg,rgba(8,18,44,.6),rgba(7,15,36,.82));
+  border:1px solid rgba(255,255,255,.18);
+  box-shadow:0 18px 48px rgba(0,0,0,.38);
+  backdrop-filter:blur(14px);
 }
 
 /* ロゴ */
+.logo-wrap{
+  position:relative;
+  margin:0 auto 20px;
+  animation:logoFloat 3s ease-in-out infinite;
+}
+
+.logo-glow{
+  position:absolute;
+  left:10%;
+  right:10%;
+  bottom:4%;
+  height:28%;
+  background:radial-gradient(ellipse,rgba(95,240,204,.45),transparent 70%);
+  filter:blur(20px);
+  z-index:-1;
+}
+
 .logo{
-  width:80%;
-  max-width:400px;
-  margin-bottom:20px;
+  width:100%;
+  max-width:520px;
+  filter:drop-shadow(0 18px 24px rgba(0,0,0,.35));
+}
+
+/* サブタイトル */
+.subtitle{
+  margin:8px 0 22px;
+  color:#c9e8ff;
+  font-size:14px;
+  letter-spacing:.08em;
 }
 
 /* ボタン */
 .btn{
-  padding:12px 30px;
-  background:#00c2ff;
+  width:100%;
+  padding:16px;
   border:none;
-  border-radius:20px;
-  color:white;
+  border-radius:18px;
   font-size:18px;
-  margin-top:20px;
+  font-weight:bold;
+  color:#08224f;
+  background:linear-gradient(180deg,#fff2a8,#ffd84d);
+  box-shadow:0 10px 20px rgba(255,216,77,.25);
+  cursor:pointer;
 }
 
-/* 入力 */
+.btn.secondary{
+  background:linear-gradient(180deg,#78efd6,#48cab7);
+  margin-top:12px;
+}
+
+/* 点滅 */
+.hint{
+  margin-top:18px;
+  font-size:12px;
+  color:#c9e8ff;
+  letter-spacing:.12em;
+  animation:blink 1.7s infinite;
+}
+
+/* 名前入力 */
+#nameScreen .card{
+  max-width:430px;
+}
+
 input{
-  padding:10px;
-  font-size:18px;
-  border-radius:10px;
+  width:100%;
+  padding:14px;
+  margin:16px 0;
   border:none;
+  border-radius:14px;
+  font-size:20px;
   text-align:center;
 }
 
-/* 非表示 */
 .hidden{
   display:none;
 }
 
-/* アニメ */
-.fade{
-  animation:fade 0.5s;
+/* パーティクル */
+.particle{
+  position:absolute;
+  width:7px;
+  height:7px;
+  border-radius:50%;
+  background:rgba(95,240,204,.8);
+  box-shadow:0 0 12px rgba(95,240,204,.8);
+  animation:floatUp linear infinite;
 }
 
-@keyframes fade{
-  from{opacity:0}
-  to{opacity:1}
+@keyframes logoFloat{
+  0%,100%{ transform:translateY(0); }
+  50%{ transform:translateY(-7px); }
+}
+
+@keyframes blink{
+  0%,100%{ opacity:.35; }
+  50%{ opacity:1; }
+}
+
+@keyframes gridMove{
+  from{ transform:translateY(0); }
+  to{ transform:translateY(34px); }
+}
+
+@keyframes floatUp{
+  from{
+    transform:translateY(30px);
+    opacity:0;
+  }
+  20%{ opacity:1; }
+  to{
+    transform:translateY(-110vh);
+    opacity:0;
+  }
 }
 </style>
 </head>
 
 <body>
 
+<div class="grid"></div>
+<div class="ring"></div>
+<div id="particles"></div>
+
 <!-- タイトル -->
-<div id="title" class="screen fade">
+<div id="title" class="screen">
+  <div class="card">
+    <div class="logo-wrap">
+      <div class="logo-glow"></div>
+      <img src="logo.png" class="logo" alt="ミトモン">
+    </div>
 
-  <!-- ロゴ -->
-  <img src="logo.png" class="logo" alt="ミトモン">
+    <div class="subtitle">Mitnehmen Monster - ミトモン -</div>
 
-  <h1>ミトモン</h1>
+    <button class="btn" onclick="startGame()">はじめる</button>
 
-  <button class="btn" onclick="startGame()">はじめる</button>
-
+    <div class="hint">PRESS START</div>
+  </div>
 </div>
 
 <!-- 名前入力 -->
 <div id="nameScreen" class="screen hidden">
-
-  <h2>なまえを入力</h2>
-
-  <input id="playerName" placeholder="なまえ" maxlength="12">
-
-  <button class="btn" onclick="confirmName()">決定</button>
-
-</div>
-
-<script>
-
-function startGame(){
-  document.getElementById("title").classList.add("hidden");
-  document.getElementById("nameScreen").classList.remove("hidden");
-  document.getElementById("playerName").focus();
-}
-
-function confirmName(){
-  const name = document.getElementById("playerName").value.trim();
-
-  if(name === ""){
-    alert("名前を入力して！");
-    return;
-  }
-
-  // 名前保存
-  localStorage.setItem("playerName", name);
-
-  // 本編へ
-  location.href = "play.html";
-}
-
-// Enterキー対応
-document.getElementById("playerName").addEventListener("keydown", function(e){
-  if(e.key === "Enter"){
-    confirmName();
-  }
-});
-
-</script>
-
-</body>
-</html>
+  <div class="card">
+    <h2>なまえを入力</h2>
+    <input id="playerName"
