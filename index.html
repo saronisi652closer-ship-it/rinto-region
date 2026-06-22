@@ -6,9 +6,7 @@
 <title>ミトモン</title>
 
 <style>
-*{
-  box-sizing:border-box;
-}
+*{ box-sizing:border-box; }
 
 html,body{
   margin:0;
@@ -26,7 +24,11 @@ body{
     linear-gradient(160deg,#06142f,#0d2f6f 45%,#0a5d87 75%,#149b96);
 }
 
-/* 画面 */
+/* ★ 背景レイヤー全部にpointer-events:none を追加 */
+.grid, .ring, #particles, .particle {
+  pointer-events: none;
+}
+
 .screen{
   position:absolute;
   inset:0;
@@ -34,9 +36,10 @@ body{
   justify-content:center;
   align-items:center;
   padding:20px;
+  /* ★ ボタンが確実にタップできるようz-indexを設定 */
+  z-index:1;
 }
 
-/* 背景グリッド */
 .grid{
   position:absolute;
   inset:0;
@@ -46,9 +49,9 @@ body{
   background-size:34px 34px;
   animation:gridMove 18s linear infinite;
   opacity:.35;
+  z-index:0;
 }
 
-/* 光の輪 */
 .ring{
   position:absolute;
   width:72vmin;
@@ -56,9 +59,9 @@ body{
   border-radius:50%;
   border:1px solid rgba(255,255,255,.18);
   box-shadow:0 0 40px rgba(95,240,204,.18);
+  z-index:0;
 }
 
-/* カード */
 .card{
   position:relative;
   z-index:2;
@@ -72,7 +75,6 @@ body{
   backdrop-filter:blur(14px);
 }
 
-/* ロゴ */
 .logo-wrap{
   position:relative;
   margin:0 auto 20px;
@@ -88,6 +90,7 @@ body{
   background:radial-gradient(ellipse,rgba(95,240,204,.45),transparent 70%);
   filter:blur(20px);
   z-index:-1;
+  pointer-events:none;
 }
 
 .logo{
@@ -96,7 +99,6 @@ body{
   filter:drop-shadow(0 18px 24px rgba(0,0,0,.35));
 }
 
-/* サブタイトル */
 .subtitle{
   margin:8px 0 22px;
   color:#c9e8ff;
@@ -104,7 +106,6 @@ body{
   letter-spacing:.08em;
 }
 
-/* ボタン */
 .btn{
   width:100%;
   padding:16px;
@@ -116,6 +117,9 @@ body{
   background:linear-gradient(180deg,#fff2a8,#ffd84d);
   box-shadow:0 10px 20px rgba(255,216,77,.25);
   cursor:pointer;
+  /* ★ ボタンは確実にタップ受け取る */
+  position:relative;
+  z-index:10;
 }
 
 .btn.secondary{
@@ -123,7 +127,6 @@ body{
   margin-top:12px;
 }
 
-/* 点滅 */
 .hint{
   margin-top:18px;
   font-size:12px;
@@ -132,10 +135,7 @@ body{
   animation:blink 1.7s infinite;
 }
 
-/* 名前入力 */
-#nameScreen .card{
-  max-width:430px;
-}
+#nameScreen .card{ max-width:430px; }
 
 input{
   width:100%;
@@ -147,11 +147,8 @@ input{
   text-align:center;
 }
 
-.hidden{
-  display:none;
-}
+.hidden{ display:none; }
 
-/* パーティクル */
 .particle{
   position:absolute;
   width:7px;
@@ -160,33 +157,26 @@ input{
   background:rgba(95,240,204,.8);
   box-shadow:0 0 12px rgba(95,240,204,.8);
   animation:floatUp linear infinite;
+  pointer-events:none;
+  z-index:0;
 }
 
 @keyframes logoFloat{
   0%,100%{ transform:translateY(0); }
   50%{ transform:translateY(-7px); }
 }
-
 @keyframes blink{
   0%,100%{ opacity:.35; }
   50%{ opacity:1; }
 }
-
 @keyframes gridMove{
   from{ transform:translateY(0); }
   to{ transform:translateY(34px); }
 }
-
 @keyframes floatUp{
-  from{
-    transform:translateY(30px);
-    opacity:0;
-  }
+  from{ transform:translateY(30px); opacity:0; }
   20%{ opacity:1; }
-  to{
-    transform:translateY(-110vh);
-    opacity:0;
-  }
+  to{ transform:translateY(-110vh); opacity:0; }
 }
 </style>
 </head>
@@ -204,11 +194,8 @@ input{
       <div class="logo-glow"></div>
       <img src="logo.png" class="logo" alt="ミトモン">
     </div>
-
     <div class="subtitle">Mitnehmen Monster - ミトモン -</div>
-
     <button class="btn" onclick="startGame()">はじめる</button>
-
     <div class="hint">PRESS START</div>
   </div>
 </div>
@@ -217,4 +204,52 @@ input{
 <div id="nameScreen" class="screen hidden">
   <div class="card">
     <h2>なまえを入力</h2>
-    <input id="playerName"
+    <input id="playerName" type="text" maxlength="8" placeholder="なまえ">
+    <button class="btn" onclick="goToPlay()">けってい</button>
+    <button class="btn secondary" onclick="goBack()">もどる</button>
+  </div>
+</div>
+
+<script>
+// パーティクル生成
+(function(){
+  const container = document.getElementById('particles');
+  for(let i = 0; i < 18; i++){
+    const p = document.createElement('div');
+    p.className = 'particle';
+    p.style.left = Math.random()*100 + 'vw';
+    p.style.bottom = '-10px';
+    p.style.animationDuration = (6 + Math.random()*10) + 's';
+    p.style.animationDelay = (Math.random()*8) + 's';
+    p.style.opacity = 0;
+    container.appendChild(p);
+  }
+})();
+
+function startGame(){
+  document.getElementById('title').classList.add('hidden');
+  document.getElementById('nameScreen').classList.remove('hidden');
+}
+
+function goBack(){
+  document.getElementById('nameScreen').classList.add('hidden');
+  document.getElementById('title').classList.remove('hidden');
+}
+
+function goToPlay(){
+  const name = document.getElementById('playerName').value.trim();
+  if(!name){ 
+    alert('なまえを入力してね！');
+    return; 
+  }
+  localStorage.setItem('playerName', name);
+  window.location.href = './play.html';
+}
+
+if('serviceWorker' in navigator){
+  navigator.serviceWorker.register('./service-worker.js');
+}
+</script>
+
+</body>
+</html>
