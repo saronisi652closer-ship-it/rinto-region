@@ -4,11 +4,19 @@ ctx.imageSmoothingEnabled = false;
 
 const W = 240, H = 160;
 const TILE = 16;
-// プレイヤー画像（1回だけロード）
+
+// プレイヤー画像
 const playerImg = new Image();
 playerImg.src = "./player.png";
 let playerImgReady = false;
 playerImg.onload = () => { playerImgReady = true; draw(); };
+
+// 御三家画像
+const flamelImg = new Image();
+flamelImg.src = "./assets/フラメル.png";
+
+const vassaImg = new Image();
+vassaImg.src = "./assets/ヴァッサ.png";
 
 // マップ：#=壁、.=道、G=草むら
 const MAP = [
@@ -18,12 +26,12 @@ const MAP = [
   "#..#..#...#.#..#",
   "#..#..#...#.#..#",
   "#..####...###..#",
-  "#...............".padEnd(16,"#"), // 念のため
+  "#..............#",
   "################"
 ].map(row => row.slice(0,16));
 
 const state = {
-  mode: "field", // "field" or "battle"
+  mode: "field",
   msg: "",
   player: { x: 2, y: 2 },
   enemyName: "",
@@ -45,7 +53,6 @@ function tryMove(dx,dy){
   state.player.x = nx;
   state.player.y = ny;
 
-  // 草むらならエンカウント（20%）
   if (tileAt(nx,ny) === "G" && Math.random() < 0.20){
     startBattle();
   }
@@ -71,9 +78,9 @@ function drawField(){
   for(let y=0; y<MAP.length; y++){
     for(let x=0; x<MAP[y].length; x++){
       const t = MAP[y][x];
-      if (t === "#") ctx.fillStyle = "#0f2a1a";    // 壁（濃い緑）
-      else if (t === "G") ctx.fillStyle = "#1f7a2f"; // 草
-      else ctx.fillStyle = "#66aa66";             // 道
+      if (t === "#") ctx.fillStyle = "#0f2a1a";
+      else if (t === "G") ctx.fillStyle = "#1f7a2f";
+      else ctx.fillStyle = "#66aa66";
       ctx.fillRect(x*TILE, y*TILE, TILE, TILE);
     }
   }
@@ -82,7 +89,6 @@ function drawField(){
   ctx.fillStyle = "#ff3b30";
   ctx.fillRect(state.player.x*TILE, state.player.y*TILE, TILE, TILE);
 
-  // 簡易UI
   drawBox("フィールド  矢印/タッチで移動", 4, 4, W-8, 22);
 }
 
@@ -93,18 +99,26 @@ function drawBattle() {
   ctx.fillStyle = "#0b0c10";
   ctx.fillRect(0, 0, W, H);
 
-  // 敵（仮 48x48）
-  ctx.fillStyle = "#f5d000";
-  ctx.fillRect(160, 24, 48, 48);
+  // 敵（ヴァッサ）：右上
+  if (vassaImg.complete && vassaImg.naturalWidth > 0) {
+    ctx.drawImage(vassaImg, 148, 12, 64, 64);
+  } else {
+    ctx.fillStyle = "#4488ff";
+    ctx.fillRect(148, 12, 64, 64);
+  }
 
-  // 自分（仮 48x48）
-  ctx.fillStyle = "#ff3b30";
-  ctx.fillRect(32, 80, 48, 48);
+  // 自分（フラメル）：左下
+  if (flamelImg.complete && flamelImg.naturalWidth > 0) {
+    ctx.drawImage(flamelImg, 20, 72, 64, 64);
+  } else {
+    ctx.fillStyle = "#ff3b30";
+    ctx.fillRect(20, 72, 64, 64);
+  }
 
   // メッセージ枠
   drawBox(state.msg || "どうする？", 6, 112, W - 12, 42);
 
-  // にげるボタン（右下）
+  // にげるボタン
   drawButton("にげる", 156, 120, 78, 16);
 }
 
@@ -113,7 +127,6 @@ function drawBox(text, x,y,w,h){
   ctx.fillRect(x,y,w,h);
   ctx.strokeStyle = "#ffffff";
   ctx.strokeRect(x,y,w,h);
-
   ctx.fillStyle = "#fff";
   ctx.font = "10px sans-serif";
   wrapText(text, x+6, y+14, w-12, 12);
@@ -151,61 +164,31 @@ function draw(){
   else drawBattle();
 }
 
+// キーボード操作
 document.addEventListener("keydown", (e) => {
   if (state.mode === "field"){
-    if (e.key === "ArrowUp") tryMove(0,-1);
-    if (e.key === "ArrowDown") tryMove(0, 1);
-    if (e.key === "ArrowLeft") tryMove(-1,0);
+    if (e.key === "ArrowUp")    tryMove(0,-1);
+    if (e.key === "ArrowDown")  tryMove(0, 1);
+    if (e.key === "ArrowLeft")  tryMove(-1,0);
     if (e.key === "ArrowRight") tryMove( 1,0);
   } else {
-    // バトル中：Esc or Enter で逃げる
-    if (e.key === "Escape" || e.key === "Enter") { endBattle(); draw(); }
+    if (e.key === "Escape" || e.key === "Enter"){ endBattle(); draw(); }
   }
 });
 
-// タッチ操作（十字キー）
+// 十字キー
 document.querySelectorAll(".dpad-btn").forEach((btn) => {
   btn.addEventListener("click", () => {
     const d = btn.dataset.dir;
-    if (d === "up") tryMove(0, -1);
-    if (d === "down") tryMove(0, 1);
-    if (d === "left") tryMove(-1, 0);
+    if (d === "up")    tryMove(0,-1);
+    if (d === "down")  tryMove(0, 1);
+    if (d === "left")  tryMove(-1,0);
     if (d === "right") tryMove(1, 0);
   });
 });
 
-// バトル画面クリックで「にげる」判定（簡易）
+// バトル画面タップで「にげる」
 canvas.addEventListener("click", (ev)=>{
   if (state.mode !== "battle") return;
-  // 画面上の「にげる」ボタン領域（156,120,78,16）
   const rect = canvas.getBoundingClientRect();
-  const sx = (ev.clientX - rect.left) * (canvas.width / rect.width);
-  const sy = (ev.clientY - rect.top) * (canvas.height / rect.height);
-  if (sx>=156 && sx<=234 && sy>=120 && sy<=136){
-    endBattle();
-    draw();
-  }
-});
-// A/B/Start/Select ボタン
-document.querySelectorAll(".ab-btn").forEach((btn) => {
-  btn.addEventListener("click", () => {
-    const key = btn.dataset.btn; // "a" or "b"
-    if (state.mode === "battle") {
-      if (key === "b") { endBattle(); draw(); } // Bでにげる（仮）
-      if (key === "a") { state.msg = "（A）まだ未実装"; draw(); }
-    } else {
-      if (key === "a") { state.msg = "（A）メニュー未実装"; draw(); }
-      if (key === "b") { state.msg = "（B）キャンセル未実装"; draw(); }
-    }
-  });
-});
-
-document.querySelectorAll(".ss-btn").forEach((btn) => {
-  btn.addEventListener("click", () => {
-    const k = btn.dataset.ss; // "start" or "select"
-    if (k === "start") { state.msg = "（START）メニュー未実装"; draw(); }
-    if (k === "select") { state.msg = "（SELECT）未実装"; draw(); }
-  });
-});
-
-draw();
+  const sx = (ev.c
