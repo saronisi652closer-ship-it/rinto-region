@@ -13,10 +13,14 @@ playerImg.onload = () => { playerImgReady = true; draw(); };
 
 // 御三家画像
 const flamelImg = new Image();
-flamelImg.src = "./assets/フラメル.png";
+flamelImg.src = "./assets/" + encodeURIComponent("フラメル") + ".png";
 
 const vassaImg = new Image();
-vassaImg.src = "./assets/ヴァッサ.png";
+vassaImg.src = "./assets/" + encodeURIComponent("ヴァッサ") + ".png";
+
+// 画像ロード時に再描画
+flamelImg.onload = () => draw();
+vassaImg.onload = () => draw();
 
 // マップ：#=壁、.=道、G=草むら
 const MAP = [
@@ -85,7 +89,6 @@ function drawField(){
     }
   }
 
-  // プレイヤー
   ctx.fillStyle = "#ff3b30";
   ctx.fillRect(state.player.x*TILE, state.player.y*TILE, TILE, TILE);
 
@@ -95,7 +98,6 @@ function drawField(){
 function drawBattle() {
   ctx.clearRect(0, 0, W, H);
 
-  // 背景
   ctx.fillStyle = "#0b0c10";
   ctx.fillRect(0, 0, W, H);
 
@@ -115,10 +117,7 @@ function drawBattle() {
     ctx.fillRect(20, 72, 64, 64);
   }
 
-  // メッセージ枠
   drawBox(state.msg || "どうする？", 6, 112, W - 12, 42);
-
-  // にげるボタン
   drawButton("にげる", 156, 120, 78, 16);
 }
 
@@ -164,7 +163,6 @@ function draw(){
   else drawBattle();
 }
 
-// キーボード操作
 document.addEventListener("keydown", (e) => {
   if (state.mode === "field"){
     if (e.key === "ArrowUp")    tryMove(0,-1);
@@ -176,7 +174,6 @@ document.addEventListener("keydown", (e) => {
   }
 });
 
-// 十字キー
 document.querySelectorAll(".dpad-btn").forEach((btn) => {
   btn.addEventListener("click", () => {
     const d = btn.dataset.dir;
@@ -187,8 +184,36 @@ document.querySelectorAll(".dpad-btn").forEach((btn) => {
   });
 });
 
-// バトル画面タップで「にげる」
 canvas.addEventListener("click", (ev)=>{
   if (state.mode !== "battle") return;
   const rect = canvas.getBoundingClientRect();
-  const sx = (ev.c
+  const sx = (ev.clientX - rect.left) * (canvas.width / rect.width);
+  const sy = (ev.clientY - rect.top) * (canvas.height / rect.height);
+  if (sx>=156 && sx<=234 && sy>=120 && sy<=136){
+    endBattle();
+    draw();
+  }
+});
+
+document.querySelectorAll(".ab-btn").forEach((btn) => {
+  btn.addEventListener("click", () => {
+    const key = btn.dataset.btn;
+    if (state.mode === "battle") {
+      if (key === "b"){ endBattle(); draw(); }
+      if (key === "a"){ state.msg = "（A）まだ未実装"; draw(); }
+    } else {
+      if (key === "a"){ state.msg = "（A）メニュー未実装"; draw(); }
+      if (key === "b"){ state.msg = "（B）キャンセル未実装"; draw(); }
+    }
+  });
+});
+
+document.querySelectorAll(".ss-btn").forEach((btn) => {
+  btn.addEventListener("click", () => {
+    const k = btn.dataset.ss;
+    if (k === "start")  { state.msg = "（START）メニュー未実装"; draw(); }
+    if (k === "select") { state.msg = "（SELECT）未実装"; draw(); }
+  });
+});
+
+draw();
