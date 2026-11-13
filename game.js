@@ -58,6 +58,7 @@ const state = {
   result: "",       // "win" / "lose"
   waitInput: false, // メッセージ送り待ち
   battlePhase: "select", // "select" / "anim" / "end"
+  cursor: 0,        // コマンド選択のカーソル位置（BATTLE_MENUの添字）
 };
 
 function tileAt(x,y){
@@ -86,6 +87,7 @@ function startBattle(){
   state.playerMon = { ...PLAYER_MON };
   state.mode = "battle";
   state.battlePhase = "select";
+  state.cursor = 0;
   state.waitInput = false;
   pushMsg(`野生の${ename}が あらわれた！`, true);
 }
@@ -149,6 +151,7 @@ function doPlayerAttack(){
 }
 
 function doEnemyAttack(){
+  if(state.mode !== "battle" || !state.enemy) return; // 戦闘が終わっていたら何もしない
   const dmg = calcDmg(state.enemy.atk, state.playerMon.def);
   state.playerMon.hp = Math.max(0, state.playerMon.hp - dmg);
   pushMsg(`${state.enemy.name}の ${state.enemy.move}！`, false);
@@ -160,9 +163,9 @@ function doEnemyAttack(){
     pushMsg(`まけてしまった…`, true);
     state._nextResult = "lose";
   } else {
+    // ダメージメッセージを送り終えると advanceMsg() が「どうする？」を出す
+    // （メッセージ表示中にコマンドが押せてしまうのを防ぐ）
     state.battlePhase = "select";
-    state.msg = "どうする？";
-    draw();
   }
 }
 
@@ -183,6 +186,19 @@ function goResult(){
 }
 
 // ── 描画 ──
+
+// 半透明の枠つきメッセージボックス
+function drawBox(text,x,y,w,h){
+  ctx.fillStyle="rgba(0,0,0,0.78)";
+  ctx.fillRect(x,y,w,h);
+  ctx.strokeStyle="#cfcfcf";
+  ctx.lineWidth=2;
+  ctx.strokeRect(x+1,y+1,w-2,h-2);
+  ctx.lineWidth=1;
+  ctx.fillStyle="#fff";
+  ctx.font="10px sans-serif";
+  ctx.fillText(text, x+8, y+Math.floor(h/2)+4);
+}
 
 function drawField(){
   ctx.clearRect(0,0,W,H);
@@ -257,7 +273,7 @@ function drawBattle(){
   ctx.fillStyle="#fff";
   ctx.font="bold 9px sans-serif";
   ctx.fillText(`野生 ${state.enemy.name}`, 6,13);
-  drawHpBar(4,14,80, state.enemy.hp, state.enemy.maxHp);
+  drawHpBar(4,14,62, state.enemy.hp, state.enemy.maxHp);
 
   // 自分ステータス枠（右下上部）
   ctx.fillStyle="rgba(0,0,0,0.6)";
@@ -267,7 +283,7 @@ function drawBattle(){
   ctx.fillStyle="#fff";
   ctx.font="bold 9px sans-serif";
   ctx.fillText(`フラメル`, 132,89);
-  drawHpBar(130,90,80, state.playerMon.hp, state.playerMon.maxHp);
+  drawHpBar(130,90,62, state.playerMon.hp, state.playerMon.maxHp);
 
   // メッセージ枠
   ctx.fillStyle="rgba(0,0,0,0.82)";
@@ -275,23 +291,20 @@ function drawBattle(){
   ctx.strokeStyle="#fff";
   ctx.strokeRect(2,112,W-4,44);
 
-  if(state.battlePhase==="select" && !state.waitInput && state.msg==="どうする？"){
-    // コマンド選択
+  if(inCommandSelect()){
+    // コマンド選択（BATTLE_MENU はタップ判定と共通）
     ctx.fillStyle="#fff";
     ctx.font="10px sans-serif";
     ctx.fillText("どうする？", 8,124);
-    // たたかう
-    ctx.fillStyle="#ffe566";
-    ctx.fillRect(100,114,64,16);
-    ctx.fillStyle="#000";
-    ctx.font="bold 10px sans-serif";
-    ctx.fillText("たたかう", 104,126);
-    // にげる
-    ctx.fillStyle="#aaa";
-    ctx.fillRect(168,114,64,16);
-    ctx.fillStyle="#000";
-    ctx.font="bold 10px sans-serif";
-    ctx.fillText("にげる", 174,126);
+    BATTLE_MENU.forEach((m,i)=>{
+      const sel = i===state.cursor;
+      ctx.fillStyle = sel ? "#ffe566" : "#aaa";
+      ctx.fillRect(m.x,m.y,m.w,m.h);
+      ctx.fillStyle="#000";
+      ctx.font="bold 10px sans-serif";
+      ctx.fillText(m.label, m.x+4, m.y+12);
+      if(sel){ ctx.fillStyle="#ffe566"; ctx.fillText("▶", m.x-10, m.y+12); }
+    });
 
     // 技名表示
     ctx.fillStyle="#ccc";
@@ -332,6 +345,11 @@ function drawResult(){
 }
 
 function draw(){
+  // 画面(シーン)が変わったら仮想パッドの表示を更新
+  if(document.body.dataset.scene !== state.mode){
+    document.body.dataset.scene = state.mode;
+    if(window.PadUI) PadUI.refresh();
+  }
   if(state.mode==="field") drawField();
   else if(state.mode==="battle") drawBattle();
   else drawResult();
@@ -351,83 +369,132 @@ function wrapText(text,x,y,maxWidth,lineHeight){
   ctx.fillText(line,x,y);
 }
 
-// ── 入力 ──
+// ── コマンド層（入力方法に依存しない）──
+// 画面タッチ・仮想パッド・外部ゲームパッド・キーボードは、すべてこの層の関数を呼ぶ。
+// 例：「たたかう」をタップしても、カーソルを合わせてAボタンを押しても、同じ BATTLE_MENU[i].run() が実行される。
+// 戦闘の選択肢を増やす（技選択・対象選択など）ときは、BATTLE_MENU のようなメニュー定義を足せばよい。
 
-document.addEventListener("keydown",(e)=>{
-  if(state.mode==="field"){
-    if(e.key==="ArrowUp")    tryMove(0,-1);
-    if(e.key==="ArrowDown")  tryMove(0,1);
-    if(e.key==="ArrowLeft")  tryMove(-1,0);
-    if(e.key==="ArrowRight") tryMove(1,0);
-  } else if(state.mode==="battle"){
-    if(e.key==="Escape"){ endBattle(); }
-    if(e.key==="Enter"||e.key===" "){
-      if(state.waitInput){
-        if(state._nextResult) goResult();
-        else advanceMsg();
-      }
-    }
-  } else if(state.mode==="result"){
-    if(e.key==="Enter"||e.key===" ") returnToField();
-  }
-});
+const BATTLE_MENU = [
+  { id:"fight", label:"たたかう", x:100, y:114, w:64, h:16, run:()=>doPlayerAttack() },
+  { id:"run",   label:"にげる",   x:168, y:114, w:64, h:16, run:()=>endBattle() },
+];
 
-document.querySelectorAll(".dpad-btn").forEach(btn=>{
-  btn.addEventListener("click",()=>{
-    const d=btn.dataset.dir;
-    if(d==="up")    tryMove(0,-1);
-    if(d==="down")  tryMove(0,1);
-    if(d==="left")  tryMove(-1,0);
-    if(d==="right") tryMove(1,0);
-  });
-});
+function inCommandSelect(){
+  return state.mode==="battle" && state.battlePhase==="select" && !state.waitInput && state.msg==="どうする？";
+}
 
-canvas.addEventListener("click",(ev)=>{
-  const rect=canvas.getBoundingClientRect();
-  const sx=(ev.clientX-rect.left)*(W/rect.width);
-  const sy=(ev.clientY-rect.top)*(H/rect.height);
+function activateMenu(i){
+  const m = BATTLE_MENU[i];
+  if(!m || !inCommandSelect()) return;
+  state.cursor = i;
+  m.run();
+}
 
+function advanceOrResult(){
+  if(state._nextResult) goResult();
+  else advanceMsg();
+}
+
+// 決定（Aボタン / 画面タップ共通）
+function cmdConfirm(){
   if(state.mode==="battle"){
-    if(state.waitInput){
-      if(state._nextResult) goResult();
-      else advanceMsg();
-      return;
-    }
-    if(state.battlePhase==="select" && state.msg==="どうする？"){
-      // たたかう（100,114,64,16）
-      if(sx>=100&&sx<=164&&sy>=114&&sy<=130){ doPlayerAttack(); }
-      // にげる（168,114,64,16）
-      if(sx>=168&&sx<=232&&sy>=114&&sy<=130){ endBattle(); }
-    }
+    if(state.waitInput) advanceOrResult();      // メッセージ送り
+    else activateMenu(state.cursor);            // コマンド決定
   } else if(state.mode==="result"){
     returnToField();
   }
-});
+}
 
-document.querySelectorAll(".ab-btn").forEach(btn=>{
-  btn.addEventListener("click",()=>{
-    const key=btn.dataset.btn;
-    if(state.mode==="battle"){
-      if(key==="a"){
-        if(state.waitInput){
-          if(state._nextResult) goResult();
-          else advanceMsg();
-        } else if(state.battlePhase==="select" && state.msg==="どうする？"){
-          doPlayerAttack();
-        }
-      }
-      if(key==="b") endBattle();
-    } else if(state.mode==="result"){
-      if(key==="a") returnToField();
+// キャンセル（Bボタン）：コマンド選択中は「にげる」
+function cmdCancel(){
+  if(inCommandSelect()) activateMenu(BATTLE_MENU.findIndex(m=>m.id==="run"));
+}
+
+// カーソル移動
+function cmdCursor(delta){
+  if(!inCommandSelect()) return;
+  state.cursor = (state.cursor + delta + BATTLE_MENU.length) % BATTLE_MENU.length;
+  draw();
+}
+
+// 画面タップ（240x160座標）
+function handleTap(x,y){
+  if(state.mode==="battle"){
+    if(state.waitInput){ cmdConfirm(); return; }
+    if(inCommandSelect()){
+      const i = BATTLE_MENU.findIndex(m=> x>=m.x && x<=m.x+m.w && y>=m.y && y<=m.y+m.h);
+      if(i>=0) activateMenu(i);
     }
-  });
-});
+  } else if(state.mode==="result"){
+    cmdConfirm();
+  }
+}
 
-document.querySelectorAll(".ss-btn").forEach(btn=>{
-  btn.addEventListener("click",()=>{ /* 未実装 */ });
-});
+// フィールドの直接タッチ操作：触った方向へ移動、押し続けると連続移動
+let touchHold = null;
+
+function fieldDirFromPoint(x,y){
+  const px = state.player.x*TILE + TILE/2;
+  const py = state.player.y*TILE + TILE/2;
+  const dx = x-px, dy = y-py;
+  if(Math.hypot(dx,dy) < TILE*0.6) return null;
+  return Math.abs(dx)>Math.abs(dy) ? [dx<0?-1:1, 0] : [0, dy<0?-1:1];
+}
+
+function stopTouchMove(id){
+  if(!touchHold) return;
+  if(id!==undefined && touchHold.id!==id) return;
+  clearTimeout(touchHold.delay);
+  clearInterval(touchHold.rate);
+  touchHold = null;
+}
+
+function startTouchMove(ev){
+  stopTouchMove();
+  const hold = { id:ev.id, x:ev.x, y:ev.y };
+  touchHold = hold;
+  const step = ()=>{
+    if(touchHold!==hold) return;
+    if(state.mode!=="field"){ stopTouchMove(); return; }
+    const d = fieldDirFromPoint(hold.x, hold.y);
+    if(d) tryMove(d[0], d[1]);
+  };
+  step();
+  hold.delay = setTimeout(()=>{ if(touchHold===hold) hold.rate = setInterval(step, 130); }, 260);
+}
+
+function onPointer(ev){
+  if(ev.phase==="down"){
+    if(state.mode==="field") startTouchMove(ev);
+    else handleTap(ev.x, ev.y);
+  } else if(ev.phase==="move"){
+    if(touchHold && touchHold.id===ev.id){ touchHold.x = ev.x; touchHold.y = ev.y; }
+  } else {
+    stopTouchMove(ev.id);
+  }
+}
+
+// ── 入力イベントの受け口（input.js から届く）──
+const DIR_VEC = { up:[0,-1], down:[0,1], left:[-1,0], right:[1,0] };
+
+function handleInput(ev){
+  if(ev.type==="pointer") return onPointer(ev);
+  if(ev.type!=="press") return;
+  const a = ev.action;
+
+  if(DIR_VEC[a]){
+    if(state.mode==="field") return tryMove(DIR_VEC[a][0], DIR_VEC[a][1]); // 長押しで連続移動
+    if(ev.repeat) return;
+    return cmdCursor(a==="left"||a==="up" ? -1 : 1);
+  }
+  if(ev.repeat) return;
+  if(a==="a") return cmdConfirm();
+  if(a==="b") return cmdCancel();
+  // l / r / select は今後の機能用に予約（menu / start は pad.js が設定画面を開く）
+}
 
 function returnToField(){
+  stopTouchMove();
   state.mode="field";
   state.msg="";
   state.msgQueue=[];
@@ -436,7 +503,11 @@ function returnToField(){
   state._nextResult=null;
   state.result="";
   state.battlePhase="select";
+  state.cursor=0;
   draw();
 }
+
+Input.attachCanvas(canvas, W, H);
+Input.on(handleInput);
 
 draw();

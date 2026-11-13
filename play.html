@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover" />
   <title>ミトモン</title>
 
   <link rel="stylesheet" href="./style.css" />
@@ -10,63 +10,26 @@
   <meta name="theme-color" content="#000000" />
 
   <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
 </head>
 
 <body>
-
-  <!-- プレイヤー名表示 -->
-  <div id="playerHud" style="
-    position:fixed;
-    top:10px;
-    left:10px;
-    z-index:999;
-    padding:6px 10px;
-    background:rgba(0,0,0,0.45);
-    color:#fff;
-    border-radius:10px;
-    font-size:14px;
-  ">
-    主人公：---
+  <div id="stage">
+    <canvas id="game" width="240" height="160"></canvas>
   </div>
 
-  <div class="shell">
-    <!-- 左 -->
-    <div class="left">
-      <div class="dpad">
-        <button class="dpad-btn up" data-dir="up">▲</button>
-        <button class="dpad-btn leftb" data-dir="left">◀</button>
-        <button class="dpad-btn rightb" data-dir="right">▶</button>
-        <button class="dpad-btn down" data-dir="down">▼</button>
-      </div>
-    </div>
+  <!-- プレイヤー名表示（位置は pad.js が調整） -->
+  <div id="playerHud">主人公：---</div>
 
-    <!-- 中央 -->
-    <div class="mid">
-      <canvas id="game" width="240" height="160"></canvas>
-
-      <div class="ss">
-        <button class="ss-btn" data-ss="select">SELECT</button>
-        <button class="ss-btn" data-ss="start">START</button>
-      </div>
-    </div>
-
-    <!-- 右 -->
-    <div class="right">
-      <div class="ab">
-        <button class="ab-btn b" data-btn="b">B</button>
-        <button class="ab-btn a" data-btn="a">A</button>
-      </div>
-    </div>
-  </div>
-
+  <!-- 入力の共通層 → 仮想パッドUI → ゲーム本体 の順に読み込む -->
+  <script src="./input.js"></script>
+  <script src="./pad.js"></script>
   <script src="./game.js"></script>
 
   <script>
-    // 名前取得
     const playerName = localStorage.getItem("playerName");
-
-    if(playerName){
+    if (playerName) {
       document.getElementById("playerHud").textContent = "主人公：" + playerName;
     }
 
@@ -74,6 +37,5 @@
       navigator.serviceWorker.register("./service-worker.js");
     }
   </script>
-
 </body>
 </html>

@@ -1,11 +1,13 @@
 // service-worker.js
-const CACHE_NAME = "mitomon-cache-v2";
+const CACHE_NAME = "mitomon-cache-v3";
 
 const ASSETS = [
   "./",
   "./index.html",
   "./play.html",
   "./style.css",
+  "./input.js",
+  "./pad.js",
   "./game.js",
   "./manifest.webmanifest",
   "./logo.png",
@@ -32,15 +34,25 @@ self.addEventListener("activate", (event) => {
 
 self.addEventListener("fetch", (event) => {
   const req = event.request;
+  if (req.method !== "GET") return;
 
   if (req.mode === "navigate") {
     event.respondWith(
-      fetch(req).catch(() => caches.match("./index.html"))
+      fetch(req).catch(() => caches.match(req).then((c) => c || caches.match("./index.html")))
     );
     return;
   }
 
+  // ネットワーク優先（更新がすぐ反映される）。オフライン時のみキャッシュを使う。
   event.respondWith(
-    caches.match(req).then((cached) => cached || fetch(req))
+    fetch(req)
+      .then((res) => {
+        if (res && res.ok && new URL(req.url).origin === location.origin) {
+          const copy = res.clone();
+          caches.open(CACHE_NAME).then((c) => c.put(req, copy));
+        }
+        return res;
+      })
+      .catch(() => caches.match(req))
   );
 });
